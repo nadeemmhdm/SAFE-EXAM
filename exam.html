@@ -1,0 +1,1855 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exam Portal</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4a6bff;
+            --secondary: #f8f9fa;
+            --danger: #dc3545;
+            --success: #28a745;
+            --warning: #ffc107;
+            --dark: #343a40;
+            --light: #f8f9fa;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background-color: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 15px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+        }
+        
+        .logo i {
+            margin-right: 10px;
+        }
+        
+        .auth-buttons button {
+            padding: 8px 15px;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            margin-left: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .sign-in {
+            background-color: transparent;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+        }
+        
+        .sign-up {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .auth-buttons button:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+        
+        .main-content {
+            margin-top: 30px;
+        }
+        
+        .exam-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .exam-card {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .exam-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .exam-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--dark);
+        }
+        
+        .exam-meta {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .exam-description {
+            margin-bottom: 15px;
+            color: #555;
+            font-size: 14px;
+        }
+        
+        .exam-actions {
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .btn {
+            padding: 8px 12px;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .btn i {
+            margin-right: 8px;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #3a5ae8;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 10px rgba(74, 107, 255, 0.3);
+        }
+        
+        .btn-secondary {
+            background-color: var(--secondary);
+            color: var(--dark);
+            border: 1px solid #ddd;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #e9ecef;
+        }
+        
+        .no-exams {
+            text-align: center;
+            padding: 40px;
+            color: #777;
+        }
+        
+        .no-exams i {
+            font-size: 50px;
+            margin-bottom: 20px;
+            color: #ddd;
+        }
+        
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top-color: var(--primary);
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background-color: white;
+            border-radius: 10px;
+            padding: 30px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+            animation: modalFadeIn 0.3s ease;
+        }
+        
+        @keyframes modalFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .modal-title {
+            font-size: 20px;
+            font-weight: 600;
+        }
+        
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #777;
+        }
+        
+        .auth-form .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border 0.3s ease;
+        }
+        
+        .form-control:focus {
+            border-color: var(--primary);
+            outline: none;
+        }
+        
+        .password-toggle {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #777;
+        }
+        
+        .password-input {
+            position: relative;
+        }
+        
+        .forgot-password {
+            text-align: right;
+            margin-bottom: 15px;
+        }
+        
+        .forgot-password a {
+            color: var(--primary);
+            text-decoration: none;
+            font-size: 14px;
+        }
+        
+        .remember-me {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .remember-me input {
+            margin-right: 8px;
+        }
+        
+        .form-footer {
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .form-footer a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .dashboard {
+            display: none;
+            width: 100%;
+        }
+        
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        
+        .welcome-message {
+            font-size: 24px;
+            font-weight: 600;
+        }
+        
+        .user-menu {
+            position: relative;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .dropdown-menu {
+            position: absolute;
+            right: 0;
+            top: 50px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            width: 200px;
+            padding: 10px 0;
+            z-index: 10;
+            display: none;
+        }
+        
+        .dropdown-menu.show {
+            display: block;
+            animation: fadeIn 0.2s ease;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .dropdown-item {
+            padding: 10px 20px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+        }
+        
+        .dropdown-item i {
+            margin-right: 10px;
+            color: #777;
+        }
+        
+        .dropdown-item:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: var(--success);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 5px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            z-index: 1000;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+        
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        .toast i {
+            margin-right: 10px;
+            font-size: 20px;
+        }
+        
+        .toast.error {
+            background-color: var(--danger);
+        }
+        
+        .toast.warning {
+            background-color: var(--warning);
+            color: var(--dark);
+        }
+        
+        .exam-password-modal .modal-content {
+            max-width: 500px;
+        }
+        
+        .exam-container {
+            display: none;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            margin-top: 30px;
+        }
+        
+        .exam-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .exam-title {
+            font-size: 24px;
+            font-weight: 600;
+        }
+        
+        .timer {
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--primary);
+            background-color: #f0f4ff;
+            padding: 8px 15px;
+            border-radius: 5px;
+        }
+        
+        .question-container {
+            margin-bottom: 30px;
+        }
+        
+        .question-text {
+            font-size: 18px;
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+        
+        .options-list {
+            list-style: none;
+        }
+        
+        .option-item {
+            margin-bottom: 10px;
+        }
+        
+        .option-label {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .option-label:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .option-radio {
+            margin-right: 10px;
+        }
+        
+        .progress-container {
+            margin-bottom: 20px;
+        }
+        
+        .progress-bar {
+            height: 10px;
+            background-color: #eee;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        
+        .progress {
+            height: 100%;
+            background-color: var(--primary);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        .progress-text {
+            text-align: right;
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .exam-footer {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        
+        .btn-lg {
+            padding: 12px 25px;
+            font-size: 16px;
+        }
+        
+        .results-container {
+            display: none;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            margin-top: 30px;
+        }
+        
+        .results-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .score {
+            font-size: 48px;
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+        
+        .result-message {
+            font-size: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .passed {
+            color: var(--success);
+        }
+        
+        .failed {
+            color: var(--danger);
+        }
+        
+        .results-details {
+            margin-bottom: 30px;
+        }
+        
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .detail-label {
+            font-weight: 500;
+            color: #666;
+        }
+        
+        .detail-value {
+            font-weight: 600;
+        }
+        
+        .attempts-list {
+            margin-top: 30px;
+        }
+        
+        .attempt-item {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .attempt-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        
+        .attempt-score {
+            font-weight: bold;
+        }
+        
+        .attempt-date {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        @media (max-width: 768px) {
+            .exam-list {
+                grid-template-columns: 1fr;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .auth-buttons {
+                width: 100%;
+                display: flex;
+                justify-content: space-between;
+            }
+            
+            .auth-buttons button {
+                width: 48%;
+                margin-left: 0;
+            }
+            
+            .exam-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            
+            .exam-footer {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container header-content">
+            <div class="logo">
+                <i class="fas fa-graduation-cap"></i>
+                <span>ExamPortal</span>
+            </div>
+            <div class="auth-buttons">
+                <button class="sign-in" id="signInBtn">Sign In</button>
+                <button class="sign-up" id="signUpBtn">Sign Up</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Auth Forms -->
+        <div class="modal" id="authModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title" id="modalTitle">Sign In</h3>
+                    <button class="close-modal" id="closeModal">&times;</button>
+                </div>
+                <form id="signInForm" class="auth-form">
+                    <div class="form-group">
+                        <label for="loginEmail">Email</label>
+                        <input type="email" id="loginEmail" class="form-control" required>
+                    </div>
+                    <div class="form-group password-input">
+                        <label for="loginPassword">Password</label>
+                        <input type="password" id="loginPassword" class="form-control" required>
+                        <i class="fas fa-eye password-toggle" id="toggleLoginPassword"></i>
+                    </div>
+                    <div class="remember-me">
+                        <input type="checkbox" id="rememberMe">
+                        <label for="rememberMe">Remember me</label>
+                    </div>
+                    <div class="forgot-password">
+                        <a href="#" id="forgotPassword">Forgot password?</a>
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="signInSubmit">
+                        <i class="fas fa-sign-in-alt"></i> Sign In
+                    </button>
+                    <div class="form-footer">
+                        <span>Don't have an account? <a href="#" id="switchToSignUp">Sign Up</a></span>
+                    </div>
+                </form>
+
+                <form id="signUpForm" class="auth-form" style="display: none;">
+                    <div class="form-group">
+                        <label for="signupName">Full Name</label>
+                        <input type="text" id="signupName" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="signupEmail">Email</label>
+                        <input type="email" id="signupEmail" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="signupGender">Gender</label>
+                        <select id="signupGender" class="form-control" required>
+                            <option value="">Select Gender</option>
+                            <option value="male">Male</option>
+                            <option value="female">Female</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="signupPhone">Phone Number</label>
+                        <input type="tel" id="signupPhone" class="form-control" required>
+                    </div>
+                    <div class="form-group password-input">
+                        <label for="signupPassword">Password</label>
+                        <input type="password" id="signupPassword" class="form-control" required>
+                        <i class="fas fa-eye password-toggle" id="toggleSignupPassword"></i>
+                    </div>
+                    <div class="form-group password-input">
+                        <label for="signupConfirmPassword">Confirm Password</label>
+                        <input type="password" id="signupConfirmPassword" class="form-control" required>
+                        <i class="fas fa-eye password-toggle" id="toggleConfirmPassword"></i>
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="signUpSubmit">
+                        <i class="fas fa-user-plus"></i> Sign Up
+                    </button>
+                    <div class="form-footer">
+                        <span>Already have an account? <a href="#" id="switchToSignIn">Sign In</a></span>
+                    </div>
+                </form>
+
+                <form id="forgotPasswordForm" class="auth-form" style="display: none;">
+                    <div class="form-group">
+                        <label for="forgotEmail">Email</label>
+                        <input type="email" id="forgotEmail" class="form-control" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="resetPasswordSubmit">
+                        <i class="fas fa-key"></i> Reset Password
+                    </button>
+                    <div class="form-footer">
+                        <span>Remember your password? <a href="#" id="switchBackToSignIn">Sign In</a></span>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Exam Password Modal -->
+        <div class="modal exam-password-modal" id="examPasswordModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">Enter Exam Password</h3>
+                    <button class="close-modal" id="closePasswordModal">&times;</button>
+                </div>
+                <form id="examPasswordForm">
+                    <div class="form-group password-input">
+                        <label for="examPassword">Password</label>
+                        <input type="password" id="examPassword" class="form-control" required>
+                        <i class="fas fa-eye password-toggle" id="toggleExamPassword"></i>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-lock-open"></i> Start Exam
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Dashboard -->
+        <div class="dashboard" id="dashboard">
+            <div class="dashboard-header">
+                <h2 class="welcome-message" id="welcomeMessage">Welcome, User</h2>
+                <div class="user-menu">
+                    <div class="user-avatar" id="userAvatar">U</div>
+                    <div class="dropdown-menu" id="dropdownMenu">
+                        <div class="dropdown-item" id="profileBtn">
+                            <i class="fas fa-user"></i> Profile
+                        </div>
+                        <div class="dropdown-item" id="changePasswordBtn">
+                            <i class="fas fa-lock"></i> Change Password
+                        </div>
+                        <div class="dropdown-item" id="logoutBtn">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <h2>Available Exams</h2>
+            <div class="exam-list" id="examList">
+                <div class="loading">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+
+            <!-- Exam Container -->
+            <div class="exam-container" id="examContainer">
+                <div class="exam-header">
+                    <h2 class="exam-title" id="examTitle">Exam Title</h2>
+                    <div class="timer" id="timer">00:00</div>
+                </div>
+                
+                <div class="progress-container">
+                    <div class="progress-bar">
+                        <div class="progress" id="progressBar"></div>
+                    </div>
+                    <div class="progress-text" id="progressText">Question 1 of 10</div>
+                </div>
+                
+                <div class="question-container" id="questionContainer">
+                    <div class="question-text" id="questionText">Question text goes here</div>
+                    <ul class="options-list" id="optionsList">
+                        <!-- Options will be added here -->
+                    </ul>
+                </div>
+                
+                <div class="exam-footer">
+                    <button class="btn btn-secondary" id="prevQuestion">
+                        <i class="fas fa-arrow-left"></i> Previous
+                    </button>
+                    <button class="btn btn-primary" id="nextQuestion">
+                        Next <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Results Container -->
+            <div class="results-container" id="resultsContainer">
+                <div class="results-header">
+                    <div class="score" id="examScore">0%</div>
+                    <div class="result-message" id="resultMessage">You passed the exam!</div>
+                </div>
+                
+                <div class="results-details">
+                    <div class="detail-item">
+                        <span class="detail-label">Exam Name:</span>
+                        <span class="detail-value" id="resultExamName">-</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Date Completed:</span>
+                        <span class="detail-value" id="resultDate">-</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Time Taken:</span>
+                        <span class="detail-value" id="resultTimeTaken">-</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Correct Answers:</span>
+                        <span class="detail-value" id="resultCorrect">-</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Total Questions:</span>
+                        <span class="detail-value" id="resultTotal">-</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Pass Mark:</span>
+                        <span class="detail-value" id="resultPassMark">-</span>
+                    </div>
+                </div>
+                
+                <button class="btn btn-primary btn-lg" id="backToDashboard">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </button>
+                
+                <div class="attempts-list" id="attemptsList">
+                    <h3>Your Previous Attempts</h3>
+                    <!-- Attempts will be added here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-app.js";
+        import { getDatabase, ref, set, push, onValue, update } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-database.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendPasswordResetEmail, updatePassword, updateProfile } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-auth.js";
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBVqt-YFoaUCCcv9EGIZGju9bIlPuOmfe0",
+            authDomain: "phone-number-otp-verification.firebaseapp.com",
+            databaseURL: "https://phone-number-otp-verification-default-rtdb.firebaseio.com",
+            projectId: "phone-number-otp-verification",
+            storageBucket: "phone-number-otp-verification.appspot.com",
+            messagingSenderId: "667977098431",
+            appId: "1:667977098431:web:d85c95cf6315fc52c4520a",
+            measurementId: "G-DPB05X8S10"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+        const auth = getAuth(app);
+
+        // DOM Elements
+        const signInBtn = document.getElementById('signInBtn');
+        const signUpBtn = document.getElementById('signUpBtn');
+        const authModal = document.getElementById('authModal');
+        const closeModal = document.getElementById('closeModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const signInForm = document.getElementById('signInForm');
+        const signUpForm = document.getElementById('signUpForm');
+        const forgotPasswordForm = document.getElementById('forgotPasswordForm');
+        const switchToSignUp = document.getElementById('switchToSignUp');
+        const switchToSignIn = document.getElementById('switchToSignIn');
+        const switchBackToSignIn = document.getElementById('switchBackToSignIn');
+        const forgotPassword = document.getElementById('forgotPassword');
+        const toggleLoginPassword = document.getElementById('toggleLoginPassword');
+        const toggleSignupPassword = document.getElementById('toggleSignupPassword');
+        const toggleConfirmPassword = document.getElementById('toggleConfirmPassword');
+        const loginPassword = document.getElementById('loginPassword');
+        const signupPassword = document.getElementById('signupPassword');
+        const signupConfirmPassword = document.getElementById('signupConfirmPassword');
+        const dashboard = document.getElementById('dashboard');
+        const welcomeMessage = document.getElementById('welcomeMessage');
+        const userAvatar = document.getElementById('userAvatar');
+        const dropdownMenu = document.getElementById('dropdownMenu');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const profileBtn = document.getElementById('profileBtn');
+        const changePasswordBtn = document.getElementById('changePasswordBtn');
+        const toast = document.getElementById('toast');
+        const examList = document.getElementById('examList');
+        const examPasswordModal = document.getElementById('examPasswordModal');
+        const closePasswordModal = document.getElementById('closePasswordModal');
+        const examPasswordForm = document.getElementById('examPasswordForm');
+        const examPasswordInput = document.getElementById('examPassword');
+        const toggleExamPassword = document.getElementById('toggleExamPassword');
+        const examContainer = document.getElementById('examContainer');
+        const examTitle = document.getElementById('examTitle');
+        const timer = document.getElementById('timer');
+        const progressBar = document.getElementById('progressBar');
+        const progressText = document.getElementById('progressText');
+        const questionText = document.getElementById('questionText');
+        const optionsList = document.getElementById('optionsList');
+        const prevQuestionBtn = document.getElementById('prevQuestion');
+        const nextQuestionBtn = document.getElementById('nextQuestion');
+        const resultsContainer = document.getElementById('resultsContainer');
+        const examScore = document.getElementById('examScore');
+        const resultMessage = document.getElementById('resultMessage');
+        const resultExamName = document.getElementById('resultExamName');
+        const resultDate = document.getElementById('resultDate');
+        const resultTimeTaken = document.getElementById('resultTimeTaken');
+        const resultCorrect = document.getElementById('resultCorrect');
+        const resultTotal = document.getElementById('resultTotal');
+        const resultPassMark = document.getElementById('resultPassMark');
+        const backToDashboard = document.getElementById('backToDashboard');
+        const attemptsList = document.getElementById('attemptsList');
+
+        // Exam variables
+        let currentExam = null;
+        let currentQuestions = [];
+        let currentQuestionIndex = 0;
+        let userAnswers = [];
+        let examStartTime = null;
+        let examTimer = null;
+        let examDuration = 0;
+        let timeLeft = 0;
+        let deviceId = null;
+
+        // Show/Hide Password
+        toggleLoginPassword.addEventListener('click', () => {
+            togglePasswordVisibility(loginPassword, toggleLoginPassword);
+        });
+
+        toggleSignupPassword.addEventListener('click', () => {
+            togglePasswordVisibility(signupPassword, toggleSignupPassword);
+        });
+
+        toggleConfirmPassword.addEventListener('click', () => {
+            togglePasswordVisibility(signupConfirmPassword, toggleConfirmPassword);
+        });
+
+        toggleExamPassword.addEventListener('click', () => {
+            togglePasswordVisibility(examPasswordInput, toggleExamPassword);
+        });
+
+        function togglePasswordVisibility(input, icon) {
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+
+        // Auth Modal
+        signInBtn.addEventListener('click', () => {
+            authModal.style.display = 'flex';
+            modalTitle.textContent = 'Sign In';
+            signInForm.style.display = 'block';
+            signUpForm.style.display = 'none';
+            forgotPasswordForm.style.display = 'none';
+        });
+
+        signUpBtn.addEventListener('click', () => {
+            authModal.style.display = 'flex';
+            modalTitle.textContent = 'Sign Up';
+            signInForm.style.display = 'none';
+            signUpForm.style.display = 'block';
+            forgotPasswordForm.style.display = 'none';
+        });
+
+        closeModal.addEventListener('click', () => {
+            authModal.style.display = 'none';
+        });
+
+        window.addEventListener('click', (e) => {
+            if (e.target === authModal) {
+                authModal.style.display = 'none';
+            }
+        });
+
+        // Switch between auth forms
+        switchToSignUp.addEventListener('click', (e) => {
+            e.preventDefault();
+            modalTitle.textContent = 'Sign Up';
+            signInForm.style.display = 'none';
+            signUpForm.style.display = 'block';
+        });
+
+        switchToSignIn.addEventListener('click', (e) => {
+            e.preventDefault();
+            modalTitle.textContent = 'Sign In';
+            signUpForm.style.display = 'none';
+            signInForm.style.display = 'block';
+        });
+
+        forgotPassword.addEventListener('click', (e) => {
+            e.preventDefault();
+            modalTitle.textContent = 'Forgot Password';
+            signInForm.style.display = 'none';
+            forgotPasswordForm.style.display = 'block';
+        });
+
+        switchBackToSignIn.addEventListener('click', (e) => {
+            e.preventDefault();
+            modalTitle.textContent = 'Sign In';
+            forgotPasswordForm.style.display = 'none';
+            signInForm.style.display = 'block';
+        });
+
+        // User dropdown
+        userAvatar.addEventListener('click', () => {
+            dropdownMenu.classList.toggle('show');
+        });
+
+        window.addEventListener('click', (e) => {
+            if (!e.target.matches('#userAvatar') && !e.target.matches('.dropdown-item')) {
+                if (dropdownMenu.classList.contains('show')) {
+                    dropdownMenu.classList.remove('show');
+                }
+            }
+        });
+
+        // Show toast message
+        function showToast(message, type = 'success') {
+            toast.textContent = message;
+            toast.className = 'toast';
+            toast.classList.add(type);
+            toast.classList.add('show');
+            
+            const icon = document.createElement('i');
+            if (type === 'success') {
+                icon.className = 'fas fa-check-circle';
+            } else if (type === 'error') {
+                icon.className = 'fas fa-exclamation-circle';
+            } else {
+                icon.className = 'fas fa-info-circle';
+            }
+            toast.insertBefore(icon, toast.firstChild);
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // Sign Up
+        signUpForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const name = signUpForm['signupName'].value;
+            const email = signUpForm['signupEmail'].value;
+            const gender = signUpForm['signupGender'].value;
+            const phone = signUpForm['signupPhone'].value;
+            const password = signUpForm['signupPassword'].value;
+            const confirmPassword = signUpForm['signupConfirmPassword'].value;
+            
+            if (password !== confirmPassword) {
+                showToast('Passwords do not match', 'error');
+                return;
+            }
+            
+            createUserWithEmailAndPassword(auth, email, password)
+                .then((userCredential) => {
+                    // Signed up
+                    const user = userCredential.user;
+                    
+                    // Save additional user info to database
+                    set(ref(database, 'users/' + user.uid), {
+                        name: name,
+                        email: email,
+                        gender: gender,
+                        phone: phone,
+                        createdAt: new Date().toISOString(),
+                        role: 'student'
+                    });
+                    
+                    // Update profile
+                    updateProfile(user, {
+                        displayName: name
+                    });
+                    
+                    showToast('Account created successfully!');
+                    authModal.style.display = 'none';
+                    signUpForm.reset();
+                })
+                .catch((error) => {
+                    const errorCode = error.code;
+                    const errorMessage = error.message;
+                    showToast(errorMessage, 'error');
+                });
+        });
+
+        // Sign In
+        signInForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const email = signInForm['loginEmail'].value;
+            const password = signInForm['loginPassword'].value;
+            const rememberMe = document.getElementById('rememberMe').checked;
+            
+            signInWithEmailAndPassword(auth, email, password)
+                .then((userCredential) => {
+                    // Signed in
+                    const user = userCredential.user;
+                    showToast('Logged in successfully!');
+                    authModal.style.display = 'none';
+                    signInForm.reset();
+                })
+                .catch((error) => {
+                    const errorCode = error.code;
+                    const errorMessage = error.message;
+                    showToast(errorMessage, 'error');
+                });
+        });
+
+        // Forgot Password
+        forgotPasswordForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const email = forgotPasswordForm['forgotEmail'].value;
+            
+            sendPasswordResetEmail(auth, email)
+                .then(() => {
+                    showToast('Password reset email sent!');
+                    forgotPasswordForm.reset();
+                })
+                .catch((error) => {
+                    const errorCode = error.code;
+                    const errorMessage = error.message;
+                    showToast(errorMessage, 'error');
+                });
+        });
+
+        // Logout
+        logoutBtn.addEventListener('click', () => {
+            signOut(auth).then(() => {
+                showToast('Logged out successfully');
+                dashboard.style.display = 'none';
+                examContainer.style.display = 'none';
+                resultsContainer.style.display = 'none';
+            }).catch((error) => {
+                showToast(error.message, 'error');
+            });
+        });
+
+        // Change Password
+        changePasswordBtn.addEventListener('click', () => {
+            const newPassword = prompt('Enter your new password:');
+            if (newPassword) {
+                const user = auth.currentUser;
+                updatePassword(user, newPassword).then(() => {
+                    showToast('Password updated successfully!');
+                }).catch((error) => {
+                    showToast(error.message, 'error');
+                });
+            }
+        });
+
+        // Auth State Listener
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // User is signed in
+                const uid = user.uid;
+                
+                // Get user data from database
+                const userRef = ref(database, 'users/' + uid);
+                onValue(userRef, (snapshot) => {
+                    const userData = snapshot.val();
+                    if (userData) {
+                        welcomeMessage.textContent = `Welcome, ${userData.name}`;
+                        userAvatar.textContent = userData.name.charAt(0).toUpperCase();
+                        
+                        // Show dashboard
+                        dashboard.style.display = 'block';
+                        
+                        // Load available exams
+                        loadExams();
+                        
+                        // Generate device ID if not exists
+                        if (!localStorage.getItem('deviceId')) {
+                            deviceId = 'device-' + Math.random().toString(36).substr(2, 9);
+                            localStorage.setItem('deviceId', deviceId);
+                        } else {
+                            deviceId = localStorage.getItem('deviceId');
+                        }
+                    }
+                });
+                
+                // Hide auth buttons
+                signInBtn.style.display = 'none';
+                signUpBtn.style.display = 'none';
+            } else {
+                // User is signed out
+                dashboard.style.display = 'none';
+                examContainer.style.display = 'none';
+                resultsContainer.style.display = 'none';
+                signInBtn.style.display = 'inline-block';
+                signUpBtn.style.display = 'inline-block';
+            }
+        });
+
+        // Load available exams
+        function loadExams() {
+            const examsRef = ref(database, 'exams');
+            onValue(examsRef, (snapshot) => {
+                const exams = snapshot.val();
+                examList.innerHTML = '';
+                
+                if (!exams) {
+                    examList.innerHTML = `
+                        <div class="no-exams">
+                            <i class="fas fa-file-alt"></i>
+                            <p>No exams available at the moment</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                let availableExams = [];
+                
+                // Filter exams that are not scheduled or scheduled for future
+                const now = new Date();
+                for (const examId in exams) {
+                    if (!exams[examId].scheduleEnabled || new Date(exams[examId].schedule) <= now) {
+                        availableExams.push({ id: examId, ...exams[examId] });
+                    }
+                }
+                
+                if (availableExams.length === 0) {
+                    examList.innerHTML = `
+                        <div class="no-exams">
+                            <i class="fas fa-file-alt"></i>
+                            <p>No exams available at the moment</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // Display exams
+                availableExams.forEach(exam => {
+                    const examCard = document.createElement('div');
+                    examCard.className = 'exam-card';
+                    
+                    const formattedDate = exam.createdAt ? new Date(exam.createdAt).toLocaleDateString() : 'Unknown';
+                    const scheduledText = exam.scheduleEnabled ? 
+                        `Scheduled: ${new Date(exam.schedule).toLocaleString()}` : 
+                        'Available anytime';
+                    
+                    examCard.innerHTML = `
+                        <h3 class="exam-title">${exam.name}</h3>
+                        <div class="exam-meta">
+                            <span>Created: ${formattedDate}</span>
+                            <span>${exam.questions ? exam.questions.length : 0} questions</span>
+                        </div>
+                        <p class="exam-description">${exam.description || 'No description'}</p>
+                        <div class="exam-meta">
+                            <span>Duration: ${exam.duration} mins</span>
+                            <span>${scheduledText}</span>
+                        </div>
+                        <div class="exam-actions">
+                            <button class="btn btn-primary btn-sm start-exam" data-id="${exam.id}">
+                                <i class="fas fa-play"></i> Start Exam
+                            </button>
+                        </div>
+                    `;
+                    
+                    examList.appendChild(examCard);
+                });
+                
+                // Add event listeners to start exam buttons
+                document.querySelectorAll('.start-exam').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const examId = e.target.getAttribute('data-id');
+                        startExam(examId);
+                    });
+                });
+            });
+        }
+
+        // Start exam
+        function startExam(examId) {
+            const examRef = ref(database, 'exams/' + examId);
+            onValue(examRef, (snapshot) => {
+                const exam = snapshot.val();
+                if (exam) {
+                    currentExam = { id: examId, ...exam };
+                    
+                    // Show password modal
+                    examPasswordModal.style.display = 'flex';
+                    examPasswordForm.reset();
+                }
+            });
+        }
+
+        // Exam password modal
+        closePasswordModal.addEventListener('click', () => {
+            examPasswordModal.style.display = 'none';
+        });
+
+        window.addEventListener('click', (e) => {
+            if (e.target === examPasswordModal) {
+                examPasswordModal.style.display = 'none';
+            }
+        });
+
+        // Verify exam password
+        examPasswordForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const password = examPasswordInput.value;
+            
+            if (password === currentExam.password) {
+                examPasswordModal.style.display = 'none';
+                
+                // Check if exam is scheduled
+                const now = new Date();
+                if (currentExam.scheduleEnabled && new Date(currentExam.schedule) > now) {
+                    showToast('This exam is not available yet', 'error');
+                    return;
+                }
+                
+                // Check max attempts
+                checkAttempts();
+            } else {
+                showToast('Incorrect exam password', 'error');
+            }
+        });
+
+        // Check user attempts
+        function checkAttempts() {
+            const userId = auth.currentUser.uid;
+            const attemptsRef = ref(database, `attempts/${currentExam.id}/${userId}`);
+            
+            onValue(attemptsRef, (snapshot) => {
+                const attempts = snapshot.val();
+                let attemptCount = 0;
+                
+                if (attempts) {
+                    attemptCount = Object.keys(attempts).length;
+                }
+                
+                if (attemptCount >= currentExam.maxAttempts) {
+                    showToast(`You have reached the maximum attempts (${currentExam.maxAttempts}) for this exam`, 'error');
+                } else {
+                    // Check if user has any incomplete attempts
+                    let hasIncomplete = false;
+                    if (attempts) {
+                        for (const attemptId in attempts) {
+                            if (attempts[attemptId].status === 'started') {
+                                hasIncomplete = true;
+                                break;
+                            }
+                        }
+                    }
+                    
+                    if (hasIncomplete) {
+                        if (confirm('You have an incomplete attempt. Would you like to continue?')) {
+                            loadExam();
+                        }
+                    } else {
+                        loadExam();
+                    }
+                }
+            });
+        }
+
+        // Load exam questions
+        function loadExam() {
+            // Shuffle questions if enabled
+            if (currentExam.shuffleQuestions) {
+                currentQuestions = shuffleArray([...currentExam.questions]);
+            } else {
+                currentQuestions = [...currentExam.questions];
+            }
+            
+            // Initialize user answers
+            userAnswers = new Array(currentQuestions.length).fill(null);
+            
+            // Set exam duration in seconds
+            examDuration = currentExam.duration * 60;
+            timeLeft = examDuration;
+            
+            // Start timer
+            examStartTime = new Date();
+            startTimer();
+            
+            // Display first question
+            currentQuestionIndex = 0;
+            displayQuestion();
+            
+            // Show exam container
+            examTitle.textContent = currentExam.name;
+            examContainer.style.display = 'block';
+            dashboard.style.display = 'none';
+            
+            // Create attempt record
+            createAttempt();
+            
+            // Prevent copy/paste
+            document.addEventListener('copy', preventCopyPaste);
+            document.addEventListener('paste', preventCopyPaste);
+            document.addEventListener('cut', preventCopyPaste);
+            
+            // Prevent context menu
+            document.addEventListener('contextmenu', preventContextMenu);
+            
+            // Detect tab switching
+            document.addEventListener('visibilitychange', handleVisibilityChange);
+            
+            // Detect fullscreen exit
+            document.addEventListener('fullscreenchange', handleFullscreenChange);
+            
+            // Request fullscreen
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    showToast('Fullscreen error: ' + err.message, 'error');
+                });
+            }
+        }
+
+        function preventCopyPaste(e) {
+            e.preventDefault();
+            showToast('Copy/paste is disabled during exam', 'error');
+            logActivity('copy_paste_attempt', { action: e.type });
+        }
+
+        function preventContextMenu(e) {
+            e.preventDefault();
+            logActivity('context_menu_attempt');
+        }
+
+        function handleVisibilityChange() {
+            if (document.hidden) {
+                logActivity('tab_switch_attempt');
+                showToast('Please stay on this tab during the exam', 'error');
+            }
+        }
+
+        function handleFullscreenChange() {
+            if (!document.fullscreenElement) {
+                showToast('Please stay in fullscreen mode during the exam', 'error');
+                document.documentElement.requestFullscreen().catch(err => {
+                    showToast('Fullscreen error: ' + err.message, 'error');
+                });
+            }
+        }
+
+        // Shuffle array
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        // Start exam timer
+        function startTimer() {
+            updateTimerDisplay();
+            
+            examTimer = setInterval(() => {
+                timeLeft--;
+                updateTimerDisplay();
+                
+                if (timeLeft <= 0) {
+                    clearInterval(examTimer);
+                    submitExam();
+                }
+            }, 1000);
+        }
+
+        // Update timer display
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            timer.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            
+            // Change color when time is running out
+            if (timeLeft <= 60) {
+                timer.style.color = 'var(--danger)';
+            } else if (timeLeft <= 300) {
+                timer.style.color = 'var(--warning)';
+            }
+        }
+
+        // Display current question
+        function displayQuestion() {
+            const question = currentQuestions[currentQuestionIndex];
+            
+            // Update progress
+            progressBar.style.width = `${((currentQuestionIndex + 1) / currentQuestions.length) * 100}%`;
+            progressText.textContent = `Question ${currentQuestionIndex + 1} of ${currentQuestions.length}`;
+            
+            // Display question text
+            questionText.textContent = question.text;
+            
+            // Clear previous options
+            optionsList.innerHTML = '';
+            
+            // Shuffle options if enabled
+            let options = question.options;
+            let correctAnswerIndex = question.correctAnswer;
+            
+            if (currentExam.shuffleOptions) {
+                const shuffled = shuffleOptions([...options], correctAnswerIndex);
+                options = shuffled.options;
+                correctAnswerIndex = shuffled.correctIndex;
+            }
+            
+            // Display options
+            options.forEach((option, index) => {
+                const li = document.createElement('li');
+                li.className = 'option-item';
+                
+                const label = document.createElement('label');
+                label.className = 'option-label';
+                
+                const radio = document.createElement('input');
+                radio.type = 'radio';
+                radio.name = 'questionOption';
+                radio.value = index;
+                radio.className = 'option-radio';
+                
+                // Check if this option was previously selected
+                if (userAnswers[currentQuestionIndex] === index) {
+                    radio.checked = true;
+                }
+                
+                const span = document.createElement('span');
+                span.textContent = option;
+                
+                label.appendChild(radio);
+                label.appendChild(span);
+                li.appendChild(label);
+                optionsList.appendChild(li);
+                
+                // Add event listener to save answer when selected
+                radio.addEventListener('change', () => {
+                    userAnswers[currentQuestionIndex] = index;
+                });
+            });
+            
+            // Update navigation buttons
+            prevQuestionBtn.disabled = currentQuestionIndex === 0;
+            nextQuestionBtn.textContent = currentQuestionIndex === currentQuestions.length - 1 ? 'Submit' : 'Next';
+        }
+
+        // Shuffle options while keeping track of correct answer
+        function shuffleOptions(options, correctIndex) {
+            const correctAnswer = options[correctIndex];
+            
+            // Shuffle the array
+            for (let i = options.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [options[i], options[j]] = [options[j], options[i]];
+            }
+            
+            // Find new index of correct answer
+            const newCorrectIndex = options.indexOf(correctAnswer);
+            
+            return {
+                options: options,
+                correctIndex: newCorrectIndex
+            };
+        }
+
+        // Navigation between questions
+        prevQuestionBtn.addEventListener('click', () => {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                displayQuestion();
+            }
+        });
+
+        nextQuestionBtn.addEventListener('click', () => {
+            // Save current answer if any
+            const selectedOption = document.querySelector('input[name="questionOption"]:checked');
+            
+            if (currentQuestionIndex === currentQuestions.length - 1) {
+                // Submit exam
+                if (selectedOption) {
+                    userAnswers[currentQuestionIndex] = parseInt(selectedOption.value);
+                }
+                submitExam();
+            } else {
+                // Go to next question
+                if (selectedOption) {
+                    userAnswers[currentQuestionIndex] = parseInt(selectedOption.value);
+                }
+                currentQuestionIndex++;
+                displayQuestion();
+            }
+        });
+
+        // Create attempt record
+        function createAttempt() {
+            const userId = auth.currentUser.uid;
+            const attemptRef = push(ref(database, `attempts/${currentExam.id}/${userId}`));
+            
+            const attemptData = {
+                startedAt: new Date().toISOString(),
+                status: 'started',
+                deviceId: deviceId,
+                ipAddress: '192.168.1.1' // In a real app, you would get this from the user's connection
+            };
+            
+            set(attemptRef, attemptData);
+            
+            // Store attempt ID for later update
+            currentExam.attemptId = attemptRef.key;
+        }
+
+        // Log activity
+        function logActivity(type, data = {}) {
+            const userId = auth.currentUser.uid;
+            if (!currentExam || !currentExam.attemptId) return;
+            
+            const activityRef = push(ref(database, `activityLogs/${currentExam.id}/${userId}/${currentExam.attemptId}`));
+            
+            const activityData = {
+                type: type,
+                timestamp: new Date().toISOString(),
+                ...data
+            };
+            
+            set(activityRef, activityData);
+        }
+
+        // Submit exam
+        function submitExam() {
+            clearInterval(examTimer);
+            
+            // Calculate score
+            let correctAnswers = 0;
+            
+            for (let i = 0; i < currentQuestions.length; i++) {
+                if (userAnswers[i] === currentQuestions[i].correctAnswer) {
+                    correctAnswers++;
+                }
+            }
+            
+            const score = Math.round((correctAnswers / currentQuestions.length) * 100);
+            const passed = score >= currentExam.passMark;
+            
+            // Calculate time taken
+            const endTime = new Date();
+            const timeTaken = Math.floor((endTime - examStartTime) / 1000); // in seconds
+            
+            // Format time taken
+            const minutes = Math.floor(timeTaken / 60);
+            const seconds = timeTaken % 60;
+            const formattedTime = `${minutes}m ${seconds}s`;
+            
+            // Update attempt record
+            const userId = auth.currentUser.uid;
+            const attemptRef = ref(database, `attempts/${currentExam.id}/${userId}/${currentExam.attemptId}`);
+            
+            const attemptData = {
+                completedAt: new Date().toISOString(),
+                status: 'completed',
+                score: score,
+                passed: passed,
+                correctAnswers: correctAnswers,
+                totalQuestions: currentQuestions.length,
+                timeTaken: timeTaken,
+                answers: userAnswers
+            };
+            
+            update(attemptRef, attemptData);
+            
+            // Save to results
+            const resultRef = push(ref(database, `results/${userId}/${currentExam.id}`));
+            set(resultRef, {
+                examId: currentExam.id,
+                examName: currentExam.name,
+                score: score,
+                passed: passed,
+                correctAnswers: correctAnswers,
+                totalQuestions: currentQuestions.length,
+                timeTaken: timeTaken,
+                completedAt: new Date().toISOString()
+            });
+            
+            // Show results
+            showResults(score, passed, correctAnswers, formattedTime);
+            
+            // Clean up event listeners
+            document.removeEventListener('copy', preventCopyPaste);
+            document.removeEventListener('paste', preventCopyPaste);
+            document.removeEventListener('cut', preventCopyPaste);
+            document.removeEventListener('contextmenu', preventContextMenu);
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+            document.removeEventListener('fullscreenchange', handleFullscreenChange);
+            
+            // Exit fullscreen
+            if (document.fullscreenElement) {
+                document.exitFullscreen();
+            }
+        }
+
+        // Show results
+        function showResults(score, passed, correctAnswers, timeTaken) {
+            examContainer.style.display = 'none';
+            resultsContainer.style.display = 'block';
+            
+            // Set result values
+            examScore.textContent = `${score}%`;
+            resultExamName.textContent = currentExam.name;
+            resultDate.textContent = new Date().toLocaleString();
+            resultTimeTaken.textContent = timeTaken;
+            resultCorrect.textContent = correctAnswers;
+            resultTotal.textContent = currentQuestions.length;
+            resultPassMark.textContent = `${currentExam.passMark}%`;
+            
+            // Set pass/fail message
+            if (passed) {
+                resultMessage.textContent = 'Congratulations! You passed the exam.';
+                resultMessage.className = 'result-message passed';
+            } else {
+                resultMessage.textContent = 'Sorry, you did not pass the exam.';
+                resultMessage.className = 'result-message failed';
+            }
+            
+            // Load previous attempts
+            loadPreviousAttempts();
+        }
+
+        // Load previous attempts
+        function loadPreviousAttempts() {
+            const userId = auth.currentUser.uid;
+            const attemptsRef = ref(database, `results/${userId}/${currentExam.id}`);
+            
+            onValue(attemptsRef, (snapshot) => {
+                const attempts = snapshot.val();
+                attemptsList.innerHTML = '<h3>Your Previous Attempts</h3>';
+                
+                if (!attempts) return;
+                
+                let attemptsArray = [];
+                
+                for (const attemptId in attempts) {
+                    attemptsArray.push({
+                        id: attemptId,
+                        ...attempts[attemptId]
+                    });
+                }
+                
+                // Sort by date (newest first)
+                attemptsArray.sort((a, b) => new Date(b.completedAt) - new Date(a.completedAt));
+                
+                // Display attempts
+                attemptsArray.forEach(attempt => {
+                    const attemptItem = document.createElement('div');
+                    attemptItem.className = 'attempt-item';
+                    
+                    const formattedDate = new Date(attempt.completedAt).toLocaleString();
+                    const minutes = Math.floor(attempt.timeTaken / 60);
+                    const seconds = attempt.timeTaken % 60;
+                    const formattedTime = `${minutes}m ${seconds}s`;
+                    
+                    attemptItem.innerHTML = `
+                        <div class="attempt-header">
+                            <span class="attempt-score ${attempt.passed ? 'passed' : 'failed'}">${attempt.score}%</span>
+                            <span class="attempt-date">${formattedDate}</span>
+                        </div>
+                        <div class="attempt-details">
+                            <span>Correct: ${attempt.correctAnswers}/${attempt.totalQuestions}</span>
+                            <span>Time: ${formattedTime}</span>
+                        </div>
+                    `;
+                    
+                    attemptsList.appendChild(attemptItem);
+                });
+            });
+        }
+
+        // Back to dashboard
+        backToDashboard.addEventListener('click', () => {
+            resultsContainer.style.display = 'none';
+            dashboard.style.display = 'block';
+            loadExams();
+        });
+    </script>
+</body>
+</html>
